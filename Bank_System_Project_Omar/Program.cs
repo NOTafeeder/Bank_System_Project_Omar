@@ -1,21 +1,21 @@
 ﻿namespace Bank_System_Project_Omar
 {
-     class Program
-     {
+    class Program
+    {
         static void Main(string[] args)
         {
             Console.WriteLine("Hello and welcome to the bank system! ");
-            string[] userNames = { 
-                "Omar", 
-                "John", 
-                "Micheal", 
-                "Frank", 
+            string[] userNames = {
+                "Omar",
+                "John",
+                "Micheal",
+                "Frank",
                 "Adam" };
-            int[] PIN = { 
-                1234, 
-                4567, 
-                8900, 
-                4242, 
+            int[] PIN = {
+                1234,
+                4567,
+                8900,
+                4242,
                 3231 };
             string[,] accountTypes = {
                 { "Lönekonto", "Sparkonto", "" },
@@ -31,18 +31,19 @@
                 {30000m, 0m, 0m},
                 {1400m, 23000m, 40000m},
             };
-            int[] accountCounts = { 
-                2, 
-                2, 
-                1, 
-                1, 
-                3 
+            int[] accountCounts = {
+                2,
+                2,
+                1,
+                1,
+                3
             };
             int loggedInUserIndex = login(userNames, PIN);
             if (loggedInUserIndex != -1) // Check if the login was successful
             {
-                ShowMenu(loggedInUserIndex); // Show the menu for the logged-in user
+                ShowMenu(loggedInUserIndex, accountTypes, balances, accountCounts); // Show the menu for the logged-in user
             }
+            
         }
         static int login(string[] userNames, int[] PIN) // Method to handle user login
         {
@@ -56,13 +57,13 @@
                     userIndex = i; // Store the index of the found user
                     break; // Exit the loop since we found the user
                 }
-            }  
+            }
             if (userIndex == -1) // If the user was not found, print an error message and return -1
             {
-                    Console.WriteLine("Felaktigt användarnamn eller PIN. Försök igen.");
-                    return -1;
+                Console.WriteLine("Felaktigt användarnamn eller PIN. Försök igen.");
+                return -1;
             }
-                int attempts = 0; // Initialize attempts to 0 to keep track of the number of PIN entry attempts
+            int attempts = 0; // Initialize attempts to 0 to keep track of the number of PIN entry attempts
 
             while (attempts < 3) // Allow the user to enter their PIN up to 3 times
             {
@@ -73,16 +74,16 @@
                     Console.WriteLine("Inloggning lyckades!");
                     return userIndex;
                 }
-                    attempts++;
-                if(attempts < 3)
+                attempts++;
+                if (attempts < 3)
                 {
                     Console.WriteLine("Felaktigt användarnamn eller PIN. Försök igen. Du har " + (3 - attempts) + " försök kvar.");
                 }
-             }
+            }
             Console.WriteLine("För många misslyckade försök. Programmet avslutas.");
             return -1; // Return -1 to indicate that the login failed after 3 attempts
         }
-        static void ShowMenu(int userIndex)
+        static void ShowMenu(int userIndex, string[,] accountTypes, decimal[,] balances, int[] accountCounts)
         {
             while (true)
             {
@@ -95,7 +96,7 @@
                 switch (choice)
                 {
                     case "1":
-                        Console.WriteLine("Du valde Visa konton och saldo");
+                        ShowAccounts(userIndex, accountTypes, balances, accountCounts);
                         break;
                     case "2":
                         Console.WriteLine("Du valde Överför pengar mellan konton");
@@ -112,5 +113,13 @@
                 }
             }
         }
-     }
+        static void ShowAccounts(int userIndex, string[,] accountTypes, decimal[,] balances, int[] accountCounts) // Method to display the user's accounts and balances
+        {
+            Console.WriteLine("Dina konton och saldon:");
+            for (int i = 0; i < accountCounts[userIndex]; i++) // Loop through the number of accounts the user has
+            {
+                Console.WriteLine($"{accountTypes[userIndex, i]}: {balances[userIndex, i]:F2} kr"); // Display the account type and balance for each account the user has
+            }
+        }
+    }
 }
