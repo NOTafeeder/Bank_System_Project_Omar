@@ -43,7 +43,7 @@
             {
                 ShowMenu(loggedInUserIndex, accountTypes, balances, accountCounts); // Show the menu for the logged-in user
             }
-            
+
         }
         static int login(string[] userNames, int[] PIN) // Method to handle user login
         {
@@ -99,7 +99,7 @@
                         ShowAccounts(userIndex, accountTypes, balances, accountCounts);
                         break;
                     case "2":
-                        Console.WriteLine("Du valde Överför pengar mellan konton");
+                        TransferMoney(userIndex, accountTypes, balances, accountCounts);
                         break;
                     case "3":
                         Console.WriteLine("Du valde Ta ut pengar");
@@ -119,6 +119,48 @@
             for (int i = 0; i < accountCounts[userIndex]; i++) // Loop through the number of accounts the user has
             {
                 Console.WriteLine($"{accountTypes[userIndex, i]}: {balances[userIndex, i]:F2} kr"); // Display the account type and balance for each account the user has
+            }
+            Console.WriteLine("Klick enter för att gå tillbaka till menyn.");
+            Console.ReadLine();
+        }
+        static void TransferMoney(int userIndex, string[,] accountTypes, decimal[,] balances, int[] accountCounts) // Method to handle money transfers between accounts
+        {
+            Console.WriteLine("Välj kontot du vill överföra pengar från:");
+            for (int i = 0; i < accountCounts[userIndex]; i++) // Loop through the number of accounts the user has
+            {
+                Console.WriteLine($"{i + 1}. {accountTypes[userIndex, i]}: {balances[userIndex, i]:F2} kr"); // Display the account type and balance for each account the user has
+            }
+            int fromAccount = int.TryParse(Console.ReadLine(), out fromAccount) ? fromAccount - 1 : -1; // Read the user's choice for the account to transfer from and convert it to an index
+            if (fromAccount < 0 || fromAccount >= accountCounts[userIndex]) // Check if the chosen account index is valid
+            {
+                Console.WriteLine("Ogiltigt konto val. Återgår till menyn.");
+                return;
+            }
+            Console.WriteLine("Välj kontot du vill överföra pengar till:");
+            for (int i = 0; i < accountCounts[userIndex]; i++) // Loop through the number of accounts the user has again to display the options for the account to transfer to
+            {
+                if (i != fromAccount)
+                {
+                    Console.WriteLine($"{i + 1}. {accountTypes[userIndex, i]}: {balances[userIndex, i]:F2} kr"); // Display the account type and balance for each account the user has, excluding the account they are transferring from
+                }
+            }
+            int toAccount = int.TryParse(Console.ReadLine(), out toAccount) ? toAccount - 1 : -1; // Read the user's choice for the account to transfer to and convert it to an index
+            if (toAccount < 0 || toAccount >= accountCounts[userIndex] || toAccount == fromAccount) // Check if the chosen account index is valid and not the same as the fromAccount
+            {
+                Console.WriteLine("Ogiltigt konto val. Återgår till menyn.");
+                return;
+            }
+            Console.Write("Ange belopp att överföra: ");
+            decimal amount = decimal.TryParse(Console.ReadLine(), out amount) ? amount : 0; // Read the amount to transfer and convert it to a decimal, or set it to 0 if the input is invalid
+            if (amount > balances[userIndex, fromAccount] || amount <= 0) // Check if the amount is greater than the balance of the fromAccount or less than or equal to 0
+            {
+                Console.WriteLine("Otillräckligt saldo för att genomföra överföringen.");
+            }
+            else
+            {
+                balances[userIndex, fromAccount] -= amount; // Deduct the amount from the fromAccount balance
+                balances[userIndex, toAccount] += amount; // Add the amount to the toAccount balance
+                Console.WriteLine($"Överföring av {amount:F2} kr från {accountTypes[userIndex, fromAccount]} till {accountTypes[userIndex, toAccount]} lyckades.");
             }
         }
     }
