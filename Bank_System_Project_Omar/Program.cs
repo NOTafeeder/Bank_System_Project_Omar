@@ -27,7 +27,7 @@
             decimal[,] balances = {
                 {4500m, 3240m, 0m},
                 {12700m, 32300m, 0m},
-                {0m, 19000m, 0m},
+                {19000m, 0m, 0m},
                 {30000m, 0m, 0m},
                 {1400m, 23000m, 40000m},
             };
@@ -38,10 +38,18 @@
                 1,
                 3
             };
-            int loggedInUserIndex = login(userNames, PIN);
-            if (loggedInUserIndex != -1) // Check if the login was successful
+            while (true)
             {
-                ShowMenu(loggedInUserIndex, accountTypes, balances, accountCounts); // Show the menu for the logged-in user
+                int loggedInUserIndex = login(userNames, PIN);
+
+                if (loggedInUserIndex != -1)
+                {
+                    ShowMenu(loggedInUserIndex, accountTypes, balances, accountCounts, PIN);
+                }
+                else
+                {
+                    break;
+                }
             }
 
         }
@@ -83,11 +91,11 @@
             Console.WriteLine("För många misslyckade försök. Programmet avslutas.");
             return -1; // Return -1 to indicate that the login failed after 3 attempts
         }
-        static void ShowMenu(int userIndex, string[,] accountTypes, decimal[,] balances, int[] accountCounts)
+        static void ShowMenu(int userIndex, string[,] accountTypes, decimal[,] balances, int[] accountCounts, int[] PIN)
         {
             while (true)
             {
-                Console.WriteLine("Väkommen till Bankomaten! Välj ett alternativ:");
+                Console.WriteLine("Välkommen till Bankomaten! Välj ett alternativ:");
                 Console.WriteLine("1. Visa konton och saldo");
                 Console.WriteLine("2. Överför pengar mellan konton");
                 Console.WriteLine("3. Ta ut pengar");
@@ -102,7 +110,7 @@
                         TransferMoney(userIndex, accountTypes, balances, accountCounts);
                         break;
                     case "3":
-                        Console.WriteLine("Du valde Ta ut pengar");
+                        WithdrawMoney(userIndex, accountTypes, balances, accountCounts, PIN);
                         break;
                     case "4":
                         Console.WriteLine("Du Loggas ut... ");
@@ -131,9 +139,11 @@
                 Console.WriteLine($"{i + 1}. {accountTypes[userIndex, i]}: {balances[userIndex, i]:F2} kr"); // Display the account type and balance for each account the user has
             }
             int fromAccount = int.TryParse(Console.ReadLine(), out fromAccount) ? fromAccount - 1 : -1; // Read the user's choice for the account to transfer from and convert it to an index
-            if (fromAccount < 0 || fromAccount >= accountCounts[userIndex]) // Check if the chosen account index is valid
+            if (fromAccount < 0 || fromAccount >= accountCounts[userIndex])
             {
-                Console.WriteLine("Ogiltigt konto val. Återgår till menyn.");
+                Console.WriteLine("Ogiltigt konto val.");
+                Console.WriteLine("Tryck Enter för att gå tillbaka till menyn.");
+                Console.ReadLine();
                 return;
             }
             Console.WriteLine("Välj kontot du vill överföra pengar till:");
@@ -145,14 +155,20 @@
                 }
             }
             int toAccount = int.TryParse(Console.ReadLine(), out toAccount) ? toAccount - 1 : -1; // Read the user's choice for the account to transfer to and convert it to an index
-            if (toAccount < 0 || toAccount >= accountCounts[userIndex] || toAccount == fromAccount) // Check if the chosen account index is valid and not the same as the fromAccount
+            if (toAccount < 0 || toAccount >= accountCounts[userIndex] || toAccount == fromAccount)
             {
-                Console.WriteLine("Ogiltigt konto val. Återgår till menyn.");
+                Console.WriteLine("Ogiltigt konto val.");
+                Console.WriteLine("Tryck Enter för att gå tillbaka till menyn.");
+                Console.ReadLine();
                 return;
             }
             Console.Write("Ange belopp att överföra: ");
             decimal amount = decimal.TryParse(Console.ReadLine(), out amount) ? amount : 0; // Read the amount to transfer and convert it to a decimal, or set it to 0 if the input is invalid
-            if (amount > balances[userIndex, fromAccount] || amount <= 0) // Check if the amount is greater than the balance of the fromAccount or less than or equal to 0
+            if ( amount <= 0) // Check if the amount is greater than the balance of the fromAccount or less than or equal to 0
+            {
+                Console.WriteLine("Ogiltigt belopp. Återgår till menyn.");
+            }
+            else if (amount > balances[userIndex, fromAccount]) // Check if the amount is greater than the balance of the fromAccount
             {
                 Console.WriteLine("Otillräckligt saldo för att genomföra överföringen.");
             }
@@ -162,6 +178,51 @@
                 balances[userIndex, toAccount] += amount; // Add the amount to the toAccount balance
                 Console.WriteLine($"Överföring av {amount:F2} kr från {accountTypes[userIndex, fromAccount]} till {accountTypes[userIndex, toAccount]} lyckades.");
             }
+            Console.WriteLine("Klick enter för att gå tillbaka till menyn.");
+            Console.ReadLine();
+        }
+        static void WithdrawMoney(int userIndex, string[,] accountTypes, decimal[,] balances, int[] accountCounts, int[] PIN) // Method to handle money withdrawals
+        {
+            Console.WriteLine("Välj kontot du vill ta ut pengar från:");
+            for (int i = 0; i < accountCounts[userIndex]; i++) // Loop through the number of accounts the user has
+            {
+                Console.WriteLine($"{i + 1}. {accountTypes[userIndex, i]}: {balances[userIndex, i]:F2} kr"); // Display the account type and balance for each account the user has
+            }
+            int fromAccount = int.TryParse(Console.ReadLine(), out fromAccount) ? fromAccount - 1 : -1; // Read the user's choice for the account to withdraw from and convert it to an index
+            if (fromAccount < 0 || fromAccount >= accountCounts[userIndex])
+            {
+                Console.WriteLine("Ogiltigt konto val.");
+                Console.WriteLine("Tryck Enter för att gå tillbaka till menyn.");
+                Console.ReadLine();
+                return;
+            }
+            Console.Write("Ange belopp att ta ut: ");
+            decimal amount = decimal.TryParse(Console.ReadLine(), out amount) ? amount : 0; // Read the amount to withdraw and convert it to a decimal, or set it to 0 if the input is invalid
+            if (amount <= 0) // Check if the amount is greater than the balance of the fromAccount or less than or equal to 0
+            {
+                Console.WriteLine("Ogiltigt belopp. Återgår till menyn.");
+            }
+            else if(amount > balances[userIndex, fromAccount]) // Check if the amount is greater than the balance of the fromAccount
+            {
+                Console.WriteLine("Otillräckligt saldo för att genomföra uttaget.");
+            }
+            else
+            {
+                Console.Write("Ange din PIN för att bekräfta uttaget: ");
+                int enteredPin = int.TryParse(Console.ReadLine(), out int pin) ? pin : -1;
+                if (enteredPin != PIN[userIndex])
+                {
+                    Console.WriteLine("Felaktig PIN. Uttaget avbröts.");
+                    Console.WriteLine("Tryck Enter för att gå tillbaka till menyn.");
+                    Console.ReadLine();
+                    return;
+                }
+                balances[userIndex, fromAccount] -= amount; // Deduct the amount from the fromAccount balance
+                Console.WriteLine($"Uttag av {amount:F2} kr från {accountTypes[userIndex, fromAccount]} lyckades.");
+            }
+            Console.WriteLine("Klick enter för att gå tillbaka till menyn.");
+            Console.ReadLine();
+
         }
     }
 }
