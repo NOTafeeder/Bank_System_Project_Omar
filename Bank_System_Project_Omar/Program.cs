@@ -113,7 +113,7 @@
                         WithdrawMoney(userIndex, accountTypes, balances, accountCounts, PIN);
                         break;
                     case "4":
-                        Console.WriteLine("Du Loggas ut... ");
+                        Console.WriteLine("Du loggas ut... ");
                         return;
                     default:
                         Console.WriteLine("Ogiltigt val. Försök igen.");
